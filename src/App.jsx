@@ -3,7 +3,6 @@ import { useTaskState } from "./hooks/useTaskState";
 import { difficulties, languages } from "./constants";
 import { Task } from "./components/Task";
 import { CodeEditor } from "./components/CodeEditor";
-import { TestResults } from "./components/TestResults";
 
 export function App() {
   const {
@@ -17,10 +16,6 @@ export function App() {
     loadingTask,
     error,
     handleGenerateTask,
-    handleRunTests,
-    testResults,
-    score,
-    loadingTests,
   } = useTaskState();
 
   return (
@@ -67,14 +62,6 @@ export function App() {
             language={language}
             value={solution}
             onChange={setSolution}
-            onRunTests={handleRunTests}
-            loadingTests={loadingTests}
-          />
-
-          <TestResults
-            testResults={testResults}
-            score={score}
-            loading={loadingTests}
           />
 
           {error && (
