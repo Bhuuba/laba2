@@ -1,76 +1,55 @@
-import React from "react";
-import { useTaskState } from "./hooks/useTaskState";
-import { difficulties, languages } from "./constants";
+import React, { useState } from "react";
 import { Task } from "./components/Task";
 import { CodeEditor } from "./components/CodeEditor";
+import { generateTask } from "./services/openaiService";
 
-export function App() {
-  const {
-    difficulty,
-    setDifficulty,
-    language,
-    setLanguage,
-    task,
-    solution,
-    setSolution,
-    loadingTask,
-    error,
-    handleGenerateTask,
-  } = useTaskState();
+function App() {
+  const [task, setTask] = useState(null);
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerateTask = async () => {
+    setLoading(true);
+    try {
+      const result = await generateTask("medium", "javascript", []); // можно добавить историю задач позже
+      setTask(result);
+      setCode(result.template || "");
+    } catch (error) {
+      console.error("Error generating task:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="container mx-auto px-4">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">LeetGPT</h1>
-          <div className="flex space-x-4">
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              className="block w-40 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              disabled={loadingTask}
-            >
-              {difficulties.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="block w-40 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              disabled={loadingTask}
-            >
-              {languages.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          </div>
+          <h1 className="text-4xl font-bold text-center text-gray-900">
+            LeetGPT: Практика программирования
+          </h1>
         </header>
 
-        <main>
+        <main className="max-w-4xl mx-auto">
           <Task
             task={task}
+            taskText={task?.task}
             onGenerate={handleGenerateTask}
-            loading={loadingTask}
+            loading={loading}
           />
 
-          <CodeEditor
-            language={language}
-            value={solution}
-            onChange={setSolution}
-          />
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-700 rounded">
-              {error}
-            </div>
+          {task && (
+            <CodeEditor
+              language="javascript"
+              value={code}
+              onChange={setCode}
+              task={task?.task}
+            />
           )}
         </main>
       </div>
     </div>
   );
 }
+
+export default App;

@@ -71,3 +71,60 @@ ${history.join("\n---\n")}
     throw err;
   }
 };
+
+export const evaluateTask = async (task, solution) => {
+  try {
+    const payload = {
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `Ты опытный проверяющий программного кода. Оцени решение задачи по следующим критериям:
+- Корректность решения
+- Эффективность алгоритма
+- Качество кода
+- Обработка крайних случаев
+Дай оценку от 1 до 100.`,
+        },
+        {
+          role: "user",
+          content: `Задача:
+${task}
+
+Решение:
+${solution}
+
+Оцени это решение и верни ответ в формате JSON:
+{
+  "score": число от 1 до 100,
+  "feedback": "детальный отзыв о решении"
+}`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 1000,
+    };
+
+    const data = await callOpenAI(payload);
+    let raw = data.choices[0].message.content;
+
+    if (raw.trim().startsWith("```")) {
+      raw = raw.replace(/^```[^\n]*\n/, "").replace(/\n```$/, "");
+    }
+
+    const parsed = JSON.parse(raw);
+
+    if (
+      !parsed ||
+      typeof parsed.score !== "number" ||
+      typeof parsed.feedback !== "string"
+    ) {
+      throw new Error("Некорректный формат JSON в ответе OpenAI");
+    }
+
+    return parsed;
+  } catch (err) {
+    console.error("Error in evaluateTask:", err);
+    throw err;
+  }
+};
