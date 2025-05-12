@@ -51,10 +51,6 @@ export const Profile = () => {
     }
   };
 
-  if (!user) {
-    return <AuthForm />;
-  }
-
   if (loading) {
     return (
       <div className="container mx-auto px-6 py-8">
@@ -75,148 +71,103 @@ export const Profile = () => {
     );
   }
 
-  // Фильтруем задачи с результатом >= 70%
-  const solvedTasks = (stats.taskHistory || []).filter(
-    (task) => task.score >= 70
-  );
-  const averageScore =
-    solvedTasks.length > 0
-      ? Math.round(
-          solvedTasks.reduce((acc, task) => acc + task.score, 0) /
-            solvedTasks.length
-        )
-      : 0;
-
-  // Пагинация для отфильтрованных задач
-  const totalPages = Math.ceil(solvedTasks.length / TASKS_PER_PAGE);
-  const startIndex = (currentPage - 1) * TASKS_PER_PAGE;
-  const currentTasks = solvedTasks
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(startIndex, startIndex + TASKS_PER_PAGE);
-
   return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <div className="bg-gray-800 text-white p-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold">{user.email}</h1>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Вийти
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+      <div className="container mx-auto px-6 py-12">
+        {!user ? (
+          <AuthForm />
+        ) : (
+          <>
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                    Ваш профіль
+                  </h1>
+                  <p className="text-gray-400">{user.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500/10 text-red-500 px-6 py-2 rounded-xl hover:bg-red-500/20 transition-all duration-300"
+                >
+                  Вийти
+                </button>
+              </div>
 
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2">Успішно вирішено</h3>
-                <p className="text-3xl font-bold text-blue-600">
-                  {solvedTasks.length}
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  задач з результатом ≥70%
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2">Середній бал</h3>
-                <p className="text-3xl font-bold text-green-600">
-                  {averageScore}%
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  для успішних рішень
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2">Загальний бал</h3>
-                <p className="text-3xl font-bold text-purple-600">
-                  {solvedTasks.reduce((acc, task) => acc + task.score, 0)}
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  сума всіх успішних спроб
-                </p>
-              </div>
-            </div>
+              {stats && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-white/5 rounded-xl p-6 transform hover:scale-105 transition-all duration-300">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-300">Загальний бал</h3>
+                    <p className="text-3xl font-bold text-blue-400">{stats.totalScore}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-6 transform hover:scale-105 transition-all duration-300">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-300">Вирішено задач</h3>
+                    <p className="text-3xl font-bold text-purple-400">{stats.solvedTasks}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-6 transform hover:scale-105 transition-all duration-300">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-300">Середній бал</h3>
+                    <p className="text-3xl font-bold text-green-400">
+                      {stats.solvedTasks ? (stats.totalScore / stats.solvedTasks).toFixed(1) : 0}
+                    </p>
+                  </div>
+                </div>
+              )}
 
-            <div>
-              <h3 className="text-xl font-semibold mb-4">
-                Історія успішно виконаних задач (70% і вище)
-              </h3>
-              {currentTasks.length > 0 ? (
-                <div className="space-y-4">
-                  {currentTasks.map((task) => (
-                    <div
-                      key={task.taskId}
-                      className="bg-white shadow-sm p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2">
-                            {task.task}
-                          </h4>
-                          <div className="flex flex-wrap gap-2 items-center text-sm text-gray-600">
-                            <span className="inline-flex items-center bg-gray-100 px-2.5 py-0.5 rounded-full">
-                              {new Date(task.date).toLocaleDateString()}
-                            </span>
-                            <span className="inline-flex items-center bg-gray-100 px-2.5 py-0.5 rounded-full">
-                              Складність: {task.difficulty}
-                            </span>
-                            {task.language && (
-                              <span className="inline-flex items-center bg-gray-100 px-2.5 py-0.5 rounded-full">
-                                {task.language}
-                              </span>
-                            )}
+              {stats?.taskHistory?.length > 0 ? (
+                <div className="bg-white/5 backdrop-blur-lg rounded-xl p-6">
+                  <h2 className="text-2xl font-semibold mb-6 text-white">Історія розв'язаних задач</h2>
+                  <div className="space-y-4">
+                    {stats.taskHistory
+                      .slice((currentPage - 1) * TASKS_PER_PAGE, currentPage * TASKS_PER_PAGE)
+                      .map((task, index) => (
+                        <div
+                          key={index}
+                          className="bg-white/5 rounded-lg p-4 transform hover:translate-x-2 transition-all duration-300"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-lg font-medium text-white mb-1">
+                                {task.title}
+                              </h3>
+                              <div className="flex items-center gap-4">
+                                <span className={`text-sm px-3 py-1 rounded-full ${
+                                  task.difficulty === 'easy' ? 'bg-green-500/20 text-green-400' :
+                                  task.difficulty === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                  'bg-red-500/20 text-red-400'
+                                }`}>
+                                  {task.difficulty}
+                                </span>
+                                <span className="text-gray-400 text-sm">
+                                  Оцінка: {task.score}%
+                                </span>
+                              </div>
+                            </div>
+                            <span className="text-blue-400">→</span>
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <span
-                            className={`text-lg font-semibold px-4 py-2 rounded-full ${
-                              task.score >= 90
-                                ? "bg-green-100 text-green-800"
-                                : task.score >= 80
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
-                          >
-                            {task.score}%
-                          </span>
-                        </div>
-                      </div>
-                      {task.solution && (
-                        <div className="mt-4">
-                          <p className="text-sm font-medium text-gray-700 mb-2">
-                            Ваше рішення:
-                          </p>
-                          <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto">
-                            {task.solution}
-                          </pre>
-                        </div>
-                      )}
+                      ))}
+                  </div>
+                  
+                  {stats.taskHistory.length > TASKS_PER_PAGE && (
+                    <div className="mt-6">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(stats.taskHistory.length / TASKS_PER_PAGE)}
+                        onPageChange={setCurrentPage}
+                      />
                     </div>
-                  ))}
+                  )}
                 </div>
               ) : (
-                <div className="text-center p-8 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-gray-500">
-                    У вас ще немає успішно вирішених задач. Спробуйте вирішити
-                    задачу з результатом більше 70%!
+                <div className="bg-white/5 backdrop-blur-lg rounded-xl p-8 text-center">
+                  <p className="text-gray-400 text-lg">
+                    Ви ще не розв'язали жодної задачі. Почніть свою подорож зараз!
                   </p>
                 </div>
               )}
-
-              {totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              )}
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

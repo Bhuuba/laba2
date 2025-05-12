@@ -12,6 +12,8 @@ import {
   getDoc,
   updateDoc,
   arrayUnion,
+  collection,
+  getDocs,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -107,8 +109,13 @@ export const updateUserStats = async (userId, taskResult) => {
       console.error("User document does not exist");
       return;
     }
-
     const userData = userDoc.data();
+
+    // Проверяем, существует ли уже такая задача
+    const existingTaskIndex = (userData.taskHistory || []).findIndex(
+      (t) => t.task === taskResult.task
+    );
+
     const taskHistoryEntry = {
       taskId: Date.now(),
       task: taskResult.task,
@@ -120,20 +127,28 @@ export const updateUserStats = async (userId, taskResult) => {
       timeSpent: taskResult.timeSpent || null,
     };
 
-    console.log("Saving task result:", taskHistoryEntry); // Отладочный вывод
+    console.log("Saving task result:", taskHistoryEntry);
+
+    // Создаем новую историю задач
+    let newTaskHistory = [...(userData.taskHistory || [])];
+
+    if (existingTaskIndex !== -1) {
+      // Если задача существует и новый результат лучше, обновляем её
+      if (taskResult.score > newTaskHistory[existingTaskIndex].score) {
+        newTaskHistory[existingTaskIndex] = taskHistoryEntry;
+      }
+    } else {
+      // Если задачи нет, добавляем новую
+      newTaskHistory.push(taskHistoryEntry);
+    }
 
     await updateDoc(userRef, {
-      solvedTasks: userData.solvedTasks
-        ? taskResult.score >= 70
-          ? userData.solvedTasks + 1
-          : userData.solvedTasks
-        : taskResult.score >= 70
-        ? 1
-        : 0,
-      totalScore:
-        (userData.totalScore || 0) +
-        (taskResult.score >= 70 ? taskResult.score : 0),
-      taskHistory: arrayUnion(taskHistoryEntry),
+      solvedTasks: newTaskHistory.filter((task) => task.score >= 70).length,
+      totalScore: newTaskHistory.reduce(
+        (sum, task) => (task.score >= 70 ? sum + task.score : sum),
+        0
+      ),
+      taskHistory: newTaskHistory,
     });
 
     console.log("Successfully updated user stats"); // Отладочный вывод
@@ -153,6 +168,41 @@ export const getSolvedTasks = async (userId) => {
     return (userData.taskHistory || []).filter((task) => task.score >= 70);
   } catch (error) {
     console.error("Error getting solved tasks:", error);
+    throw error;
+  }
+};
+
+export const getTopUsers = async (limit = 10) => {
+  try {
+    const usersRef = collection(db, "users");
+    const snapshot = await getDocs(usersRef);
+    const users = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const taskStats = data.taskHistory?.reduce(
+        (acc, task) => {
+          acc[task.difficulty] = (acc[task.difficulty] || 0) + 1;
+          return acc;
+        },
+        { easy: 0, medium: 0, hard: 0 }
+      );
+
+      users.push({
+        id: doc.id,
+        email: data.email,
+        totalScore: data.totalScore || 0,
+        solvedTasks: data.solvedTasks || 0,
+        averageScore: data.solvedTasks
+          ? (data.totalScore / data.solvedTasks).toFixed(2)
+          : 0,
+        taskStats,
+      });
+    });
+
+    return users.sort((a, b) => b.totalScore - a.totalScore).slice(0, limit);
+  } catch (error) {
+    console.error("Error in getTopUsers:", error);
     throw error;
   }
 };
