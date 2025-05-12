@@ -75,7 +75,7 @@ ${history.join("\n---\n")}
 export const evaluateTask = async (task, solution) => {
   try {
     const payload = {
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",

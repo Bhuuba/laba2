@@ -1,54 +1,24 @@
-import React, { useState } from "react";
-import { Task } from "./components/Task";
-import { CodeEditor } from "./components/CodeEditor";
-import { generateTask } from "./services/openaiService";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Header } from "./components/Header";
+import { Home } from "./pages/Home";
+import { Profile } from "./pages/Profile";
+import { Leaderboard } from "./pages/Leaderboard";
+import TaskPage from "./pages/TaskPage";
 
 function App() {
-  const [task, setTask] = useState(null);
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleGenerateTask = async () => {
-    setLoading(true);
-    try {
-      const result = await generateTask("medium", "javascript", []); // можно добавить историю задач позже
-      setTask(result);
-      setCode(result.template || "");
-    } catch (error) {
-      console.error("Error generating task:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-center text-gray-900">
-            LeetGPT: Практика программирования
-          </h1>
-        </header>
-
-        <main className="max-w-4xl mx-auto">
-          <Task
-            task={task}
-            taskText={task?.task}
-            onGenerate={handleGenerateTask}
-            loading={loading}
-          />
-
-          {task && (
-            <CodeEditor
-              language="javascript"
-              value={code}
-              onChange={setCode}
-              task={task?.task}
-            />
-          )}
-        </main>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/tasks" element={<TaskPage />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 
