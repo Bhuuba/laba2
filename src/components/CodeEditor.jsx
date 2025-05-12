@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { Button } from "./Button";
 import TaskScore from "./TaskScore";
 import { evaluateTask } from "../services/openaiService";
+import { getCurrentUser, updateUserStats } from "../services/firebaseService";
 
-export const CodeEditor = ({ language, value, onChange, task }) => {
+export const CodeEditor = ({
+  language,
+  value,
+  onChange,
+  task,
+  onTaskCompleted,
+}) => {
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState(null);
   const [feedback, setFeedback] = useState("");
   const [evaluating, setEvaluating] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [startTime] = useState(new Date());
 
   const getMonacoLanguage = () => {
     switch (language.toLowerCase()) {
@@ -145,12 +154,51 @@ export const CodeEditor = ({ language, value, onChange, task }) => {
 
   const handleSubmitSolution = async () => {
     setEvaluating(true);
+    setSaveSuccess(false);
     try {
       const result = await evaluateTask(task, value);
       setScore(result.score);
       setFeedback(result.feedback);
+
+      const timeSpentMinutes = Math.round((new Date() - startTime) / 60000);
+
+      if (result.score >= 70) {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+          const solutionData = {
+            task,
+            score: result.score,
+            solution: value,
+            date: new Date().toISOString(),
+            language,
+            timeSpent: timeSpentMinutes,
+          };
+
+          await updateUserStats(currentUser.uid, solutionData);
+          setSaveSuccess(true);
+          setOutput(
+            (prev) =>
+              `${prev}\n\n✨ Вітаємо! Ваше рішення успішно додано до профілю!\n` +
+              `📊 Результат: ${result.score}%\n` +
+              `⏱️ Час виконання: ${timeSpentMinutes} хвилин\n` +
+              `🏆 Чудова робота! Продовжуйте в тому ж дусі!`
+          );
+        }
+      } else {
+        setOutput(
+          (prev) =>
+            `${prev}\n\n⚠️ Для додавання в профіль потрібно набрати мінімум 70%\n` +
+            `📊 Ваш поточний результат: ${result.score}%\n` +
+            `⏱️ Час виконання: ${timeSpentMinutes} хвилин\n` +
+            `💡 Спробуйте покращити своє рішення!`
+        );
+      }
+
+      if (onTaskCompleted) {
+        onTaskCompleted({ ...result, timeSpent: timeSpentMinutes });
+      }
     } catch (error) {
-      setOutput("Ошибка при проверке решения: " + error.message);
+      setOutput("Помилка при перевірці рішення: " + error.message);
     } finally {
       setEvaluating(false);
     }
@@ -170,7 +218,7 @@ export const CodeEditor = ({ language, value, onChange, task }) => {
           disabled={evaluating}
           variant="secondary"
         >
-          {evaluating ? "Проверка..." : "Сдать задачу"}
+          {evaluating ? "Перевірка..." : "Здати задачу"}
         </Button>
       </div>
 
@@ -201,7 +249,16 @@ export const CodeEditor = ({ language, value, onChange, task }) => {
         </div>
       )}
 
-      {score !== null && <TaskScore score={score} feedback={feedback} />}
+      {score !== null && (
+        <div className="space-y-4">
+          <TaskScore score={score} feedback={feedback} />
+          {score >= 70 && saveSuccess && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+              Задачу успішно додано до вашого профілю! 🎉
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

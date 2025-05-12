@@ -37,6 +37,7 @@ export const generateTask = async (difficulty, language, history = []) => {
 - task: текст задачі
 - tests: масив тестів (input та expected)
 - template: початковий код для розв'язання
+- difficulty: рівень складності задачі
 
 Ось список попередніх задач, НЕ ПОВТОРЮЙ їх:
 ${history.join("\n---\n")}
@@ -63,6 +64,11 @@ ${history.join("\n---\n")}
       !Array.isArray(parsed.tests)
     ) {
       throw new Error("Некоректний формат JSON у відповіді OpenAI");
+    }
+
+    // Добавляем рівень складності, якщо його немає у відповіді
+    if (!parsed.difficulty) {
+      parsed.difficulty = difficulty;
     }
 
     return parsed;

@@ -1,7 +1,10 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export const Header = () => {
+  const { user } = useAuth();
+
   return (
     <header className="bg-gray-800 shadow-lg">
       <nav className="container mx-auto px-6 py-4">
@@ -19,26 +22,32 @@ export const Header = () => {
             >
               Головна
             </NavLink>
-            <NavLink
-              to="/tasks"
-              className={({ isActive }) =>
-                `text-white hover:text-gray-300 transition ${
-                  isActive ? "border-b-2 border-blue-500" : ""
-                }`
-              }
-            >
-              Задачі
-            </NavLink>
-            <NavLink
-              to="/leaderboard"
-              className={({ isActive }) =>
-                `text-white hover:text-gray-300 transition ${
-                  isActive ? "border-b-2 border-blue-500" : ""
-                }`
-              }
-            >
-              Рейтинг
-            </NavLink>
+
+            {user && (
+              <>
+                <NavLink
+                  to="/tasks"
+                  className={({ isActive }) =>
+                    `text-white hover:text-gray-300 transition ${
+                      isActive ? "border-b-2 border-blue-500" : ""
+                    }`
+                  }
+                >
+                  Задачі
+                </NavLink>
+                <NavLink
+                  to="/leaderboard"
+                  className={({ isActive }) =>
+                    `text-white hover:text-gray-300 transition ${
+                      isActive ? "border-b-2 border-blue-500" : ""
+                    }`
+                  }
+                >
+                  Рейтинг
+                </NavLink>
+              </>
+            )}
+
             <NavLink
               to="/profile"
               className={({ isActive }) =>
@@ -47,7 +56,7 @@ export const Header = () => {
                 }`
               }
             >
-              Мій профіль
+              {user ? user.email : "Увійти"}
             </NavLink>
           </div>
         </div>

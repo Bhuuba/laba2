@@ -2,16 +2,19 @@ import React, { useState } from "react";
 import { Task } from "../components/Task";
 import { CodeEditor } from "../components/CodeEditor";
 import { generateTask } from "../services/openaiService";
+import { updateUserStats, getCurrentUser } from "../services/firebaseService";
+import { DifficultySelector } from "../components/DifficultySelector";
 
 const TaskPage = () => {
   const [task, setTask] = useState(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [difficulty, setDifficulty] = useState("medium");
 
   const handleGenerateTask = async () => {
     setLoading(true);
     try {
-      const result = await generateTask("medium", "javascript", []); // можно добавить историю задач позже
+      const result = await generateTask(difficulty, "javascript", []);
       setTask(result);
       setCode(result.template || "");
     } catch (error) {
@@ -20,10 +23,40 @@ const TaskPage = () => {
       setLoading(false);
     }
   };
+  const handleTaskCompleted = async (taskResult) => {
+    try {
+      const currentUser = getCurrentUser();
+      if (!currentUser) return;
+
+      // Добавляем все необходимые поля к результату
+      const fullTaskResult = {
+        ...taskResult,
+        difficulty,
+        task: task.task,
+        solution: code, // Добавляем текущее решение
+        language: "javascript", // Текущий язык
+      };
+
+      console.log("Sending task result:", fullTaskResult); // Отладочный вывод
+      await updateUserStats(currentUser.uid, fullTaskResult);
+    } catch (error) {
+      console.error("Error updating user stats:", error);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <main className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-3">
+            Виберіть рівень складності:
+          </h2>
+          <DifficultySelector
+            selectedDifficulty={difficulty}
+            onSelect={setDifficulty}
+          />
+        </div>
+
         <Task
           task={task}
           taskText={task?.task}
@@ -37,6 +70,7 @@ const TaskPage = () => {
             value={code}
             onChange={setCode}
             task={task?.task}
+            onTaskCompleted={handleTaskCompleted}
           />
         )}
       </main>
