@@ -15,7 +15,10 @@ const TaskPage = () => {
     setLoading(true);
     try {
       const result = await generateTask(difficulty, "javascript", []);
-      setTask(result);
+      setTask({
+        ...result,
+        difficulty: difficulty, // Убеждаемся, что сложность всегда установлена
+      });
       setCode(result.template || "");
     } catch (error) {
       console.error("Error generating task:", error);
@@ -23,21 +26,22 @@ const TaskPage = () => {
       setLoading(false);
     }
   };
+
   const handleTaskCompleted = async (taskResult) => {
     try {
       const currentUser = getCurrentUser();
       if (!currentUser) return;
 
-      // Добавляем все необходимые поля к результату
       const fullTaskResult = {
         ...taskResult,
-        difficulty,
+        difficulty: difficulty,
         task: task.task,
-        solution: code, // Добавляем текущее решение
-        language: "javascript", // Текущий язык
+        title: task.title,
+        solution: code,
+        language: "javascript",
       };
 
-      console.log("Sending task result:", fullTaskResult); // Отладочный вывод
+      console.log("Sending task result:", fullTaskResult);
       await updateUserStats(currentUser.uid, fullTaskResult);
     } catch (error) {
       console.error("Error updating user stats:", error);
@@ -71,6 +75,7 @@ const TaskPage = () => {
               value={code}
               onChange={setCode}
               task={task?.task}
+              difficulty={difficulty}
               onTaskCompleted={handleTaskCompleted}
             />
           )}

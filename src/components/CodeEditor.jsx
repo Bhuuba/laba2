@@ -11,6 +11,7 @@ export const CodeEditor = ({
   onChange,
   task,
   onTaskCompleted,
+  difficulty, // добавляем параметр difficulty
 }) => {
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -161,7 +162,10 @@ export const CodeEditor = ({
 
       const timeSpentMinutes = Math.round((new Date() - startTime) / 60000);
 
-      if (result.score >= 70) {
+      // Проверяем проходной балл в зависимости от сложности
+      const passingScore = difficulty?.toLowerCase() === "hard" ? 65 : 70;
+
+      if (result.score >= passingScore) {
         const currentUser = getCurrentUser();
         if (currentUser) {
           const solutionData = {
@@ -171,22 +175,25 @@ export const CodeEditor = ({
             date: new Date().toISOString(),
             language,
             timeSpent: timeSpentMinutes,
+            difficulty: difficulty || "medium", // добавляем сложность
           };
 
           await updateUserStats(currentUser.uid, solutionData);
           setSaveSuccess(true);
           setOutput(
-            (prev) =>
-              `✨ Вітаємо! Ваше рішення успішно додано до профілю!\n` +
+            `✨ Вітаємо! Ваше рішення успішно додано до профілю!\n` +
               `📊 Результат: ${result.score}%\n` +
               `⏱️ Час виконання: ${timeSpentMinutes} хвилин\n` +
-              `🏆 Чудова робота! Продовжуйте в тому ж дусі!`
+              `🏆 Чудова робота! ${
+                difficulty?.toLowerCase() === "hard"
+                  ? "Складна задача успішно вирішена!"
+                  : "Продовжуйте в тому ж дусі!"
+              }`
           );
         }
       } else {
         setOutput(
-          (prev) =>
-            `${prev}\n\n⚠️ Для додавання в профіль потрібно набрати мінімум 70%\n` +
+          `⚠️ Для додавання в профіль потрібно набрати мінімум ${passingScore}%\n` +
             `📊 Ваш поточний результат: ${result.score}%\n` +
             `⏱️ Час виконання: ${timeSpentMinutes} хвилин\n` +
             `💡 Спробуйте покращити своє рішення!`
@@ -194,7 +201,11 @@ export const CodeEditor = ({
       }
 
       if (onTaskCompleted) {
-        onTaskCompleted({ ...result, timeSpent: timeSpentMinutes });
+        onTaskCompleted({
+          ...result,
+          timeSpent: timeSpentMinutes,
+          difficulty: difficulty || "medium",
+        });
       }
     } catch (error) {
       setOutput("Помилка при перевірці рішення: " + error.message);
@@ -239,12 +250,14 @@ export const CodeEditor = ({
           }}
         />
       </div>
+      {score !== null && (
+        <TaskScore score={score} feedback={feedback} difficulty={difficulty} />
+      )}
       {output && (
-        <div className="bg-gray-800 p-4 rounded-lg">
-          {/* <h3 className="text-white mb-2"></h3> */}
+        <div className="bg-gray-800 p-4 rounded-lg mt-4">
           <pre className="text-gray-300 whitespace-pre-wrap">{output}</pre>
         </div>
-      )}{" "}
+      )}
     </div>
   );
 };

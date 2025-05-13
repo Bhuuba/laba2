@@ -116,15 +116,19 @@ export const updateUserStats = async (userId, taskResult) => {
       (t) => t.task === taskResult.task
     );
 
+    // Проверяем сложность задачи и нормализуем ее
+    const difficulty = taskResult.difficulty?.toLowerCase() || "medium";
+
     const taskHistoryEntry = {
       taskId: Date.now(),
       task: taskResult.task,
       score: taskResult.score,
       solution: taskResult.solution,
       date: new Date().toISOString(),
-      difficulty: taskResult.difficulty || "medium",
+      difficulty: difficulty,
       language: taskResult.language || "javascript",
       timeSpent: taskResult.timeSpent || null,
+      title: taskResult.title || taskResult.task.split("\n")[0],
     };
 
     console.log("Saving task result:", taskHistoryEntry);
@@ -142,6 +146,18 @@ export const updateUserStats = async (userId, taskResult) => {
       newTaskHistory.push(taskHistoryEntry);
     }
 
+    // Подсчитываем статистику по уровням сложности
+    const taskStats = newTaskHistory.reduce(
+      (acc, task) => {
+        if (task.score >= 70) {
+          // Учитываем только успешно решенные задачи
+          acc[task.difficulty] = (acc[task.difficulty] || 0) + 1;
+        }
+        return acc;
+      },
+      { easy: 0, medium: 0, hard: 0 }
+    );
+
     await updateDoc(userRef, {
       solvedTasks: newTaskHistory.filter((task) => task.score >= 70).length,
       totalScore: newTaskHistory.reduce(
@@ -149,9 +165,11 @@ export const updateUserStats = async (userId, taskResult) => {
         0
       ),
       taskHistory: newTaskHistory,
+      taskStats: taskStats, // Добавляем статистику по уровням сложности
+      lastUpdated: new Date().toISOString(),
     });
 
-    console.log("Successfully updated user stats"); // Отладочный вывод
+    console.log("Successfully updated user stats");
     return taskHistoryEntry;
   } catch (error) {
     console.error("Error in updateUserStats:", error);

@@ -1,18 +1,39 @@
 import React from "react";
 
-const TaskScore = ({ score, feedback }) => {
-  const getScoreColor = (score) => {
-    if (score >= 90) return "bg-green-500";
-    if (score >= 80) return "bg-yellow-500";
-    if (score >= 70) return "bg-blue-500";
+const TaskScore = ({ score, feedback, difficulty }) => {
+  const getScoreColor = (score, difficulty) => {
+    const thresholds = {
+      hard: { excellent: 85, good: 75, pass: 65 },
+      medium: { excellent: 90, good: 80, pass: 70 },
+      easy: { excellent: 95, good: 85, pass: 70 },
+    };
+
+    const threshold =
+      thresholds[difficulty?.toLowerCase()] || thresholds.medium;
+
+    if (score >= threshold.excellent) return "bg-green-500";
+    if (score >= threshold.good) return "bg-yellow-500";
+    if (score >= threshold.pass) return "bg-blue-500";
     return "bg-red-500";
   };
 
-  const getScoreMessage = (score) => {
-    if (score >= 90) return "Відмінно! Задачу додано до профілю 🏆";
-    if (score >= 80) return "Дуже добре! Задачу додано до профілю 🌟";
-    if (score >= 70) return "Добре! Задачу додано до профілю ✅";
-    return "Спробуйте ще раз, потрібно набрати мінімум 70% ⚠️";
+  const getScoreMessage = (score, difficulty) => {
+    const isHard = difficulty?.toLowerCase() === "hard";
+    const passingScore = isHard ? 65 : 70;
+
+    if (score >= 90)
+      return `Відмінно! ${
+        isHard ? "Складну задачу" : "Задачу"
+      } додано до профілю 🏆`;
+    if (score >= 80)
+      return `Дуже добре! ${
+        isHard ? "Складну задачу" : "Задачу"
+      } додано до профілю 🌟`;
+    if (score >= passingScore)
+      return `Добре! ${
+        isHard ? "Складну задачу" : "Задачу"
+      } додано до профілю ✅`;
+    return `Спробуйте ще раз, потрібно набрати мінімум ${passingScore}% ⚠️`;
   };
 
   return (
@@ -20,33 +41,48 @@ const TaskScore = ({ score, feedback }) => {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-white text-lg">Результат:</span>
-          <span className="text-white text-xl font-bold">{score}/100</span>
-        </div>
-        <div className="w-full h-5 bg-gray-700 rounded-full overflow-hidden">
-          <div
-            className={`h-full ${getScoreColor(
-              score
-            )} transition-all duration-500 relative`}
-            style={{ width: `${score}%` }}
-          >
-            {score >= 70 && (
-              <div className="absolute right-0 top-0 h-full w-1 bg-white opacity-50"></div>
+          <div className="flex items-center space-x-2">
+            <span className="text-white text-xl font-bold">{score}/100</span>
+            {difficulty && (
+              <span
+                className={`text-sm px-2 py-1 rounded ${
+                  difficulty.toLowerCase() === "hard"
+                    ? "bg-red-500/20 text-red-400"
+                    : difficulty.toLowerCase() === "medium"
+                    ? "bg-yellow-500/20 text-yellow-400"
+                    : "bg-green-500/20 text-green-400"
+                }`}
+              >
+                {difficulty}
+              </span>
             )}
           </div>
+        </div>
+        <div className="relative w-full h-5 bg-gray-700 rounded-full overflow-hidden">
           <div
-            className="absolute h-full w-1 bg-yellow-300 opacity-50"
-            style={{ left: "70%", marginTop: "-20px" }}
-          ></div>
+            className={`h-full ${getScoreColor(
+              score,
+              difficulty
+            )} transition-all duration-500`}
+            style={{ width: `${score}%` }}
+          />
+          <div
+            className="absolute top-0 h-full bg-yellow-300/20"
+            style={{
+              left: `${difficulty?.toLowerCase() === "hard" ? "65%" : "70%"}`,
+              width: "2px",
+            }}
+          />
         </div>
         <div className="mt-2 text-center">
           <span
             className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
-              score >= 70
+              score >= (difficulty?.toLowerCase() === "hard" ? 65 : 70)
                 ? "bg-green-100 text-green-800"
                 : "bg-yellow-100 text-yellow-800"
             }`}
           >
-            {getScoreMessage(score)}
+            {getScoreMessage(score, difficulty)}
           </span>
         </div>
       </div>
