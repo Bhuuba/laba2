@@ -14,9 +14,7 @@ function App() {
       <BrowserRouter>
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
           <Header />
-          <div className="pt-16">
-            {" "}
-            {/* Отступ для фиксированного хедера */}
+          <div className="sm:pt-16">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/profile" element={<Profile />} />
