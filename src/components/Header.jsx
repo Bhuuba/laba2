@@ -33,9 +33,8 @@ export const Header = () => {
       document.body.style.overflow = "unset";
     };
   }, [isMenuOpen]);
-
   return (
-    <header className="bg-gray-800/95 backdrop-blur-md fixed top-0 left-0 right-0 z-50 shadow-lg">
+    <header className="bg-transparent fixed top-0 left-0 right-0 z-50">
       <nav className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <NavLink to="/" className="text-white font-bold text-xl">
@@ -127,77 +126,80 @@ export const Header = () => {
               )}
             </svg>
           </button>{" "}
-          {/* Мобильное меню */}
+          {/* Мобильное меню */}{" "}
           <div
-            className={`mobile-menu fixed md:hidden top-0 right-0 bottom-0 w-64 bg-gray-900 backdrop-blur-none transform transition-transform duration-300 ease-in-out shadow-2xl ${
+            className={`mobile-menu fixed md:hidden top-0 right-0 bottom-0 w-64 transform transition-transform duration-300 ease-in-out shadow-2xl ${
               isMenuOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
-            <div className="flex flex-col h-full pt-20 px-6">
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `block text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
-                    isActive ? "text-blue-400" : ""
-                  }`
-                }
-                onClick={() => setIsMenuOpen(false)}
-                end
-              >
-                Головна
-              </NavLink>
-
-              {user && (
-                <>
-                  <NavLink
-                    to="/tasks"
-                    className={({ isActive }) =>
-                      `block text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
-                        isActive ? "text-blue-400" : ""
-                      }`
-                    }
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Задачі
-                  </NavLink>
-                  <NavLink
-                    to="/leaderboard"
-                    className={({ isActive }) =>
-                      `block text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
-                        isActive ? "text-blue-400" : ""
-                      }`
-                    }
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Рейтинг
-                  </NavLink>
-                </>
-              )}
-
-              <NavLink
-                to="/profile"
-                className={({ isActive }) =>
-                  `flex items-center text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
-                    isActive ? "text-blue-400" : ""
-                  }`
-                }
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <svg
-                  className="w-6 h-6 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <div className="absolute inset-0 bg-[#020617]"></div>{" "}
+            <div className="relative z-10 flex flex-col h-full pt-20 px-6">
+              <div className="space-y-1 bg-[#0a0f1c] rounded-lg p-2">
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    `block text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
+                      isActive ? "text-blue-400" : ""
+                    }`
+                  }
+                  onClick={() => setIsMenuOpen(false)}
+                  end
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {user ? "Профіль" : "Увійти"}
-              </NavLink>
+                  Головна
+                </NavLink>
+
+                {user && (
+                  <>
+                    <NavLink
+                      to="/tasks"
+                      className={({ isActive }) =>
+                        `block text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
+                          isActive ? "text-blue-400" : ""
+                        }`
+                      }
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Задачі
+                    </NavLink>
+                    <NavLink
+                      to="/leaderboard"
+                      className={({ isActive }) =>
+                        `block text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
+                          isActive ? "text-blue-400" : ""
+                        }`
+                      }
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Рейтинг
+                    </NavLink>
+                  </>
+                )}
+
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    `flex items-center text-lg py-3 text-white hover:text-gray-300 transition border-b border-gray-800 ${
+                      isActive ? "text-blue-400" : ""
+                    }`
+                  }
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <svg
+                    className="w-6 h-6 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  {user ? "Профіль" : "Увійти"}
+                </NavLink>
+              </div>
             </div>
           </div>
           {/* Затемнение фона при открытом меню */}
