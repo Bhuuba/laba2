@@ -12,30 +12,32 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
           <Header />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/profile" element={<Profile />} />
-
-            {/* Защищенные маршруты */}
-            <Route
-              path="/tasks"
-              element={
-                <ProtectedRoute>
-                  <TaskPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/leaderboard"
-              element={
-                <ProtectedRoute>
-                  <Leaderboard />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+          <div className="pt-16">
+            {" "}
+            {/* Отступ для фиксированного хедера */}
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route
+                path="/tasks"
+                element={
+                  <ProtectedRoute>
+                    <TaskPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/leaderboard"
+                element={
+                  <ProtectedRoute>
+                    <Leaderboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
         </div>
       </BrowserRouter>
     </AuthProvider>

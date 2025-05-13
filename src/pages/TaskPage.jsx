@@ -59,38 +59,40 @@ const TaskPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <main className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-3 text-white">
-              Виберіть рівень складності:
-            </h2>
-            <DifficultySelector
-              selectedDifficulty={difficulty}
-              onSelect={setDifficulty}
-            />
-          </div>
+      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <main>
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+              Практичні завдання
+            </h1>
+            <p className="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6">
+              Виберіть складність та мову програмування, щоб отримати унікальну
+              задачу
+            </p>
 
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-3 text-white">
-              Виберіть мову програмування:
-            </h2>
-            <div className="flex space-x-4">
-              {Object.keys(languageStyles).map((lang) => (
-                <button
-                  key={lang}
-                  onClick={() => setLanguage(lang)}
-                  className={`px-6 py-2.5 rounded-lg border transition-all duration-300 font-medium text-white
-                    ${languageStyles[lang]} 
-                    ${
+            {/* Селектор сложности */}
+            <div className="space-y-4 sm:space-y-6">
+              <DifficultySelector
+                selectedDifficulty={difficulty}
+                onSelect={setDifficulty}
+              />
+
+              {/* Селектор языка */}
+              <div className="flex flex-wrap gap-2 sm:gap-4">
+                {Object.keys(languageStyles).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => setLanguage(lang)}
+                    className={`px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-base transition-colors ${
                       language === lang
-                        ? "scale-105 shadow-lg"
-                        : "opacity-70 hover:opacity-100"
+                        ? "bg-white/20 text-white"
+                        : "bg-white/5 text-gray-400 hover:bg-white/10"
                     }`}
-                >
-                  {lang.toUpperCase()}
-                </button>
-              ))}
+                  >
+                    {lang.toUpperCase()}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

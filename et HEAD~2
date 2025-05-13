@@ -1,0 +1,77 @@
+[33mcommit 9b8603833bb46e72466346ae67e4d3d532b6a137[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 22:25:08 2025 +0300
+
+    fix
+
+[33mcommit b3fad01acd1ce4b1bb3db6c0dd7a0c7e3bf8ff60[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 22:08:19 2025 +0300
+
+    add env fb
+
+[33mcommit c1c67325e9226bf57b83ba9c4e7de9f703c39781[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 13:00:07 2025 +0300
+
+    add readmi
+
+[33mcommit 14290762154637b74bfdd8dd105e28a01af17149[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 11:00:49 2025 +0300
+
+    add security
+
+[33mcommit fdf4a83e3e8c3c88114783047f6cbda89f27c3cc[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 10:34:54 2025 +0300
+
+    fix buugs
+
+[33mcommit 992f89f8475cc599c3e176523f929a7aaa1e70fd[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 08:52:50 2025 +0300
+
+    Добавлен favicon и настройки для Netlify
+
+[33mcommit 03691fca658e88a38577f38f22e23f85a6e11fd6[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 08:44:09 2025 +0300
+
+    add netlify
+
+[33mcommit 710a60e1ae2a9c17ca1d13c6b8edfd20155e83d5[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Tue May 13 01:04:12 2025 +0300
+
+    chore: add gitignore and env example file
+
+[33mcommit eb081226cc990ea6af364b8d00ace196e5fa12af[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Mon May 12 21:59:23 2025 +0300
+
+    add profile
+
+[33mcommit cbfe90754f6371ba87fc1cb92bf1efaeca24be2c[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Mon May 12 20:52:22 2025 +0300
+
+    add header
+
+[33mcommit 34a1918067d43f2537a1a6bd0f1c12c04092d922[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Mon May 12 20:38:19 2025 +0300
+
+    add gpt
+
+[33mcommit 3f9a427433f8e073658d316de9ef5bbaf502dae6[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Mon May 12 19:23:13 2025 +0300
+
+    add console
+
+[33mcommit 36f2e4e5470a7b284bee28766abbc7ea70ffe879[m
+Author: Bhuuba <sparagovskiu@gmail.com>
+Date:   Mon May 12 19:15:45 2025 +0300
+
+    Initial commit
