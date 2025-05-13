@@ -16,6 +16,7 @@ export const Profile = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,6 +50,15 @@ export const Profile = () => {
       console.error("Помилка при виході:", error);
       setError("Помилка при виході з системи");
     }
+  };
+
+  const toggleTask = (taskId) => {
+    setExpandedTaskId(expandedTaskId === taskId ? null : taskId);
+  };
+
+  const getTaskTitle = (task) => {
+    if (task.title) return task.title;
+    return task.task.split("\n")[0].replace(/`/g, "");
   };
 
   if (loading) {
@@ -97,17 +107,29 @@ export const Profile = () => {
               {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <div className="bg-white/5 rounded-xl p-6 transform hover:scale-105 transition-all duration-300">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-300">Загальний бал</h3>
-                    <p className="text-3xl font-bold text-blue-400">{stats.totalScore}</p>
+                    <h3 className="text-lg font-semibold mb-2 text-gray-300">
+                      Загальний бал
+                    </h3>
+                    <p className="text-3xl font-bold text-blue-400">
+                      {stats.totalScore}
+                    </p>
                   </div>
                   <div className="bg-white/5 rounded-xl p-6 transform hover:scale-105 transition-all duration-300">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-300">Вирішено задач</h3>
-                    <p className="text-3xl font-bold text-purple-400">{stats.solvedTasks}</p>
+                    <h3 className="text-lg font-semibold mb-2 text-gray-300">
+                      Вирішено задач
+                    </h3>
+                    <p className="text-3xl font-bold text-purple-400">
+                      {stats.solvedTasks}
+                    </p>
                   </div>
                   <div className="bg-white/5 rounded-xl p-6 transform hover:scale-105 transition-all duration-300">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-300">Середній бал</h3>
+                    <h3 className="text-lg font-semibold mb-2 text-gray-300">
+                      Середній бал
+                    </h3>
                     <p className="text-3xl font-bold text-green-400">
-                      {stats.solvedTasks ? (stats.totalScore / stats.solvedTasks).toFixed(1) : 0}
+                      {stats.solvedTasks
+                        ? (stats.totalScore / stats.solvedTasks).toFixed(1)
+                        : 0}
                     </p>
                   </div>
                 </div>
@@ -115,44 +137,100 @@ export const Profile = () => {
 
               {stats?.taskHistory?.length > 0 ? (
                 <div className="bg-white/5 backdrop-blur-lg rounded-xl p-6">
-                  <h2 className="text-2xl font-semibold mb-6 text-white">Історія розв'язаних задач</h2>
+                  <h2 className="text-2xl font-semibold mb-6 text-white">
+                    Історія розв'язаних задач
+                  </h2>
                   <div className="space-y-4">
                     {stats.taskHistory
-                      .slice((currentPage - 1) * TASKS_PER_PAGE, currentPage * TASKS_PER_PAGE)
-                      .map((task, index) => (
+                      .slice(
+                        (currentPage - 1) * TASKS_PER_PAGE,
+                        currentPage * TASKS_PER_PAGE
+                      )
+                      .map((task) => (
                         <div
-                          key={index}
-                          className="bg-white/5 rounded-lg p-4 transform hover:translate-x-2 transition-all duration-300"
+                          key={task.taskId}
+                          className="bg-gray-800/50 rounded-lg overflow-hidden transition-all duration-300"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-lg font-medium text-white mb-1">
-                                {task.title}
-                              </h3>
-                              <div className="flex items-center gap-4">
-                                <span className={`text-sm px-3 py-1 rounded-full ${
-                                  task.difficulty === 'easy' ? 'bg-green-500/20 text-green-400' :
-                                  task.difficulty === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                  'bg-red-500/20 text-red-400'
-                                }`}>
-                                  {task.difficulty}
-                                </span>
-                                <span className="text-gray-400 text-sm">
-                                  Оцінка: {task.score}%
-                                </span>
+                          <div
+                            className="p-4 cursor-pointer hover:bg-gray-700/50"
+                            onClick={() => toggleTask(task.taskId)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-4 mb-2">
+                                  <span
+                                    className={`text-sm px-3 py-1 rounded-full ${
+                                      task.difficulty === "easy"
+                                        ? "bg-green-500/20 text-green-400"
+                                        : task.difficulty === "medium"
+                                        ? "bg-yellow-500/20 text-yellow-400"
+                                        : "bg-red-500/20 text-red-400"
+                                    }`}
+                                  >
+                                    {task.difficulty}
+                                  </span>
+                                  <span className="text-blue-400 text-sm">
+                                    Оцінка: {task.score}%
+                                  </span>
+                                  <span className="text-gray-400 text-sm">
+                                    {new Date(task.date).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <h3 className="text-lg font-medium text-white">
+                                  {getTaskTitle(task)}
+                                </h3>
+                              </div>
+                              <span
+                                className={`transform transition-transform duration-300 text-blue-400 text-xl ${
+                                  expandedTaskId === task.taskId
+                                    ? "rotate-90"
+                                    : ""
+                                }`}
+                              >
+                                →
+                              </span>
+                            </div>
+                          </div>
+
+                          {expandedTaskId === task.taskId && (
+                            <div className="p-4 border-t border-gray-700 bg-gray-800/30">
+                              <div className="mb-4">
+                                <h4 className="text-gray-300 font-medium mb-2">
+                                  Повний опис:
+                                </h4>
+                                <pre className="whitespace-pre-wrap text-gray-200 bg-gray-900/50 p-4 rounded-lg">
+                                  {task.task}
+                                </pre>
+                              </div>
+                              <div>
+                                <h4 className="text-gray-300 font-medium mb-2">
+                                  Рішення:
+                                </h4>
+                                <pre className="whitespace-pre-wrap text-gray-200 bg-gray-900/50 p-4 rounded-lg font-mono">
+                                  {task.solution}
+                                </pre>
+                              </div>
+                              <div className="mt-4 flex gap-4 text-sm text-gray-400">
+                                <span>Мова: {task.language}</span>
+                                {task.timeSpent && (
+                                  <span>
+                                    Час виконання: {task.timeSpent} хв.
+                                  </span>
+                                )}
                               </div>
                             </div>
-                            <span className="text-blue-400">→</span>
-                          </div>
+                          )}
                         </div>
                       ))}
                   </div>
-                  
+
                   {stats.taskHistory.length > TASKS_PER_PAGE && (
                     <div className="mt-6">
                       <Pagination
                         currentPage={currentPage}
-                        totalPages={Math.ceil(stats.taskHistory.length / TASKS_PER_PAGE)}
+                        totalPages={Math.ceil(
+                          stats.taskHistory.length / TASKS_PER_PAGE
+                        )}
                         onPageChange={setCurrentPage}
                       />
                     </div>
@@ -161,7 +239,8 @@ export const Profile = () => {
               ) : (
                 <div className="bg-white/5 backdrop-blur-lg rounded-xl p-8 text-center">
                   <p className="text-gray-400 text-lg">
-                    Ви ще не розв'язали жодної задачі. Почніть свою подорож зараз!
+                    Ви ще не розв'язали жодної задачі. Почніть свою подорож
+                    зараз!
                   </p>
                 </div>
               )}

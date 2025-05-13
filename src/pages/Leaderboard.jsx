@@ -110,32 +110,49 @@ export const Leaderboard = () => {
                     } transition-colors duration-200`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${
-                        index === 0 ? "bg-yellow-500/20 text-yellow-400" :
-                        index === 1 ? "bg-gray-500/20 text-gray-400" :
-                        index === 2 ? "bg-orange-500/20 text-orange-400" :
-                        "bg-white/5 text-gray-400"
-                      }`}>
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg ${
+                          index === 0
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : index === 1
+                            ? "bg-gray-500/20 text-gray-400"
+                            : index === 2
+                            ? "bg-orange-500/20 text-orange-400"
+                            : "bg-white/5 text-gray-400"
+                        }`}
+                      >
                         {index + 1}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-300">{user.email}</div>
+                      <div className="text-sm font-medium text-gray-300">
+                        {user.email}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-green-400 font-medium">{user.taskStats?.easy || 0}</span>
+                      <span className="text-green-400 font-medium">
+                        {user.taskStats?.easy || 0}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-yellow-400 font-medium">{user.taskStats?.medium || 0}</span>
+                      <span className="text-yellow-400 font-medium">
+                        {user.taskStats?.medium || 0}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-red-400 font-medium">{user.taskStats?.hard || 0}</span>
+                      <span className="text-red-400 font-medium">
+                        {user.taskStats?.hard || 0}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-blue-400 font-medium">{user.averageScore}%</span>
+                      <span className="text-blue-400 font-medium">
+                        {user.averageScore}%
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-purple-400 font-medium">{user.totalScore}</span>
+                      <span className="text-purple-400 font-medium">
+                        {user.totalScore}
+                      </span>
                     </td>
                   </tr>
                 ))}

@@ -46,7 +46,7 @@ export const CodeEditor = ({
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o-mini",
             messages: [
               {
                 role: "system",
@@ -83,7 +83,7 @@ export const CodeEditor = ({
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o-mini",
             messages: [
               {
                 role: "system",
@@ -110,19 +110,18 @@ export const CodeEditor = ({
   const handleRunCode = async () => {
     setLoading(true);
     setOutput("");
-
     try {
       let result;
 
       switch (language.toLowerCase()) {
         case "python":
           result = await executePython(value);
-          setOutput(result);
+          setOutput((prev) => prev + result);
           break;
 
         case "c++":
           result = await executeCpp(value);
-          setOutput(result);
+          setOutput((prev) => prev + result);
           break;
 
         case "javascript":
@@ -178,7 +177,7 @@ export const CodeEditor = ({
           setSaveSuccess(true);
           setOutput(
             (prev) =>
-              `${prev}\n\n✨ Вітаємо! Ваше рішення успішно додано до профілю!\n` +
+              `✨ Вітаємо! Ваше рішення успішно додано до профілю!\n` +
               `📊 Результат: ${result.score}%\n` +
               `⏱️ Час виконання: ${timeSpentMinutes} хвилин\n` +
               `🏆 Чудова робота! Продовжуйте в тому ж дусі!`
@@ -221,7 +220,6 @@ export const CodeEditor = ({
           {evaluating ? "Перевірка..." : "Здати задачу"}
         </Button>
       </div>
-
       <div className="h-[400px] border border-gray-700 rounded-lg overflow-hidden mb-4">
         <Editor
           height="100%"
@@ -241,24 +239,12 @@ export const CodeEditor = ({
           }}
         />
       </div>
-
       {output && (
         <div className="bg-gray-800 p-4 rounded-lg">
-          <h3 className="text-white mb-2">Вывод:</h3>
+          {/* <h3 className="text-white mb-2"></h3> */}
           <pre className="text-gray-300 whitespace-pre-wrap">{output}</pre>
         </div>
-      )}
-
-      {score !== null && (
-        <div className="space-y-4">
-          <TaskScore score={score} feedback={feedback} />
-          {score >= 70 && saveSuccess && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-              Задачу успішно додано до вашого профілю! 🎉
-            </div>
-          )}
-        </div>
-      )}
+      )}{" "}
     </div>
   );
 };
