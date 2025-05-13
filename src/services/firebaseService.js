@@ -4,6 +4,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -29,39 +31,138 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+// Функция для преобразования кодов ошибок Firebase в понятные сообщения
+const getAuthErrorMessage = (error) => {
+  switch (error.code) {
+    // Ошибки входа
+    case "auth/invalid-email":
+      return "Неправильний формат електронної пошти";
+    case "auth/user-disabled":
+      return "Цей аккаунт було заблоковано";
+    case "auth/user-not-found":
+      return "Користувача з такою електронною поштою не знайдено";
+    case "auth/wrong-password":
+      return "Неправильний пароль";
+    case "auth/invalid-login-credentials":
+      return "Неправильна електронна пошта або пароль";
+
+    // Ошибки регистрации
+    case "auth/email-already-in-use":
+      return "Ця електронна пошта вже використовується";
+    case "auth/operation-not-allowed":
+      return "Реєстрацію через email/пароль вимкнено";
+    case "auth/weak-password":
+      return "Пароль занадто слабкий. Використовуйте мінімум 6 символів";
+
+    // Ошибки Google аутентификации
+    case "auth/popup-closed-by-user":
+      return "Ви закрили вікно авторизації Google";
+    case "auth/popup-blocked":
+      return "Спливаюче вікно було заблоковано браузером";
+    case "auth/cancelled-popup-request":
+      return "Операцію скасовано";
+
+    // Общие ошибки
+    case "auth/network-request-failed":
+      return "Помилка мережі. Перевірте підключення до інтернету";
+    case "auth/too-many-requests":
+      return "Забагато невдалих спроб. Спробуйте пізніше";
+    case "auth/internal-error":
+      return "Внутрішня помилка сервера. Спробуйте пізніше";
+
+    default:
+      return `Помилка: ${error.message}`;
+  }
+};
+
+// Функция для записи ошибок в лог (можно подключить сервис аналитики)
+const logAuthError = (error, context) => {
+  console.error(`Auth Error (${context}):`, {
+    code: error.code,
+    message: error.message,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// Проверка валидности email
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Проверка сложности пароля
+const isStrongPassword = (password) => {
+  if (password.length < 6) return false;
+  if (!/\d/.test(password)) return false;
+  if (!/[a-zA-Z]/.test(password)) return false;
+  if (!/[A-Z]/.test(password)) return false;
+  return true;
+};
 
 export const registerUser = async (email, password) => {
+  // Дополнительные проверки перед регистрацией
+  if (!isValidEmail(email)) {
+    throw new Error("Неправильний формат електронної пошти");
+  }
+
+  if (!isStrongPassword(password)) {
+    throw new Error(
+      "Пароль має містити мінімум 6 символів, одну велику літеру та одну цифру"
+    );
+  }
+
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-    // Создаем начальный документ пользователя
+
+    // Создаем документ пользователя с расширенной информацией
     await setDoc(doc(db, "users", userCredential.user.uid), {
       email: email,
       solvedTasks: 0,
       totalScore: 0,
       taskHistory: [],
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      accountType: "email",
+      isEmailVerified: false,
+      settings: {
+        preferredLanguage: "javascript",
+        theme: "dark",
+        notifications: true,
+      },
     });
+
     return userCredential.user;
   } catch (error) {
-    console.error("Error in registerUser:", error);
-    throw error;
+    logAuthError(error, "register");
+    throw new Error(getAuthErrorMessage(error));
   }
 };
 
 export const loginUser = async (email, password) => {
+  if (!isValidEmail(email)) {
+    throw new Error("Неправильний формат електронної пошти");
+  }
+
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
       password
     );
+    // Обновляем время последнего входа
+    await updateDoc(doc(db, "users", userCredential.user.uid), {
+      lastLogin: new Date().toISOString(),
+    });
     return userCredential.user;
   } catch (error) {
-    console.error("Error in loginUser:", error);
-    throw error;
+    logAuthError(error, "login");
+    throw new Error(getAuthErrorMessage(error));
   }
 };
 
@@ -80,6 +181,82 @@ export const getCurrentUser = () => {
 
 export const onAuthStateChanged = (callback) => {
   return auth.onAuthStateChanged(callback);
+};
+
+// Функция для входа через Google
+export const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    // Проверяем, существует ли документ пользователя
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+
+    // Если нет, создаем новый документ
+    if (!userDoc.exists()) {
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        solvedTasks: 0,
+        totalScore: 0,
+        taskHistory: [],
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        accountType: "google",
+        isEmailVerified: user.emailVerified,
+        settings: {
+          preferredLanguage: "javascript",
+          theme: "dark",
+          notifications: true,
+        },
+      });
+    } else {
+      await updateDoc(doc(db, "users", user.uid), {
+        lastLogin: new Date().toISOString(),
+        displayName: user.displayName, // Обновляем на случай изменения в Google
+        photoURL: user.photoURL,
+      });
+    }
+
+    return user;
+  } catch (error) {
+    logAuthError(error, "google-signin");
+    throw new Error(getAuthErrorMessage(error));
+  }
+};
+
+export const signOutUser = async () => {
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      // Обновляем время последнего выхода
+      await updateDoc(doc(db, "users", user.uid), {
+        lastLogout: new Date().toISOString(),
+      });
+    }
+    await signOut(auth);
+  } catch (error) {
+    logAuthError(error, "signout");
+    throw new Error("Помилка при виході з системи");
+  }
+};
+
+// Функция для проверки состояния аутентификации
+export const checkAuthState = (callback) => {
+  return auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        callback({ ...user, userData: userDoc.data() });
+      } catch (error) {
+        logAuthError(error, "check-auth-state");
+        callback(null);
+      }
+    } else {
+      callback(null);
+    }
+  });
 };
 
 // Функции для работы со статистикой пользователя
