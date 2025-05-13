@@ -1,47 +1,87 @@
+// Список запрещенных глобальных объектов и функций
+const RESTRICTED_GLOBALS = [
+  "fetch",
+  "XMLHttpRequest",
+  "WebSocket",
+  "eval",
+  "Function",
+  "require",
+  "import",
+  "process",
+  "window",
+  "document",
+];
+
+const createSecureSandbox = () => {
+  // Создаем безопасную среду выполнения
+  const sandbox = {
+    console: {
+      log: (...args) => console.log(...args),
+    },
+    // Добавляем только безопасные глобальные объекты
+    Math: Math,
+    Date: Date,
+    Array: Array,
+    String: String,
+    Number: Number,
+    Object: Object,
+    RegExp: RegExp,
+    Error: Error,
+    JSON: JSON,
+    Promise: Promise,
+  };
+
+  // Запрещаем доступ к прототипам
+  Object.keys(sandbox).forEach((key) => {
+    if (sandbox[key] && typeof sandbox[key] === "object") {
+      Object.freeze(sandbox[key]);
+    }
+  });
+
+  return sandbox;
+};
+
 // Функции для выполнения кода на разных языках
 const executeJavaScript = async (code, testCase) => {
   try {
-    // Создаем безопасную среду выполнения
-    const sandbox = {
-      input: testCase.input,
-      console: {
-        log: (...args) => console.log(...args),
-      },
-      result: undefined,
-    };
+    // Проверяем код на наличие запрещенных конструкций
+    RESTRICTED_GLOBALS.forEach((restricted) => {
+      if (code.includes(restricted)) {
+        throw new Error(`Заборонено використовувати '${restricted}'`);
+      }
+    });
+
+    const sandbox = createSecureSandbox();
+    sandbox.input = testCase.input;
 
     // Оборачиваем код пользователя для получения результата
     const wrappedCode = `
+      'use strict';
       (function(input) {
         try {
           ${code}
-          // Если функция определена, вызываем её с тестовыми данными
           if (typeof solution === 'function') {
-            result = solution(input);
-          } else {
-            // Ищем любую определенную функцию
-            const definedFunctions = Object.keys(this).filter(key => 
-              typeof this[key] === 'function' && 
-              key !== 'solution' && 
-              !['eval', 'parseInt', 'parseFloat'].includes(key)
-            );
-            
-            if (definedFunctions.length > 0) {
-              result = this[definedFunctions[0]](input);
-            } else {
-              throw new Error('Функція не знайдена');
-            }
+            return solution(input);
           }
-          return result;
+          const definedFunctions = Object.keys(this).filter(key => 
+            typeof this[key] === 'function' && 
+            key !== 'solution' && 
+            !['eval', 'parseInt', 'parseFloat'].includes(key)
+          );
+          
+          if (definedFunctions.length > 0) {
+            return this[definedFunctions[0]](input);
+          }
+          throw new Error('Функція не знайдена');
         } catch (e) {
           throw new Error(e.message);
         }
       }).call(Object.create(null), input);
     `;
 
-    // Выполняем код
-    const fn = new Function("input", "console", "result", wrappedCode);
-    const output = fn(testCase.input, sandbox.console, undefined);
+    // Выполняем код в безопасной среде
+    const fn = new Function(...Object.keys(sandbox), wrappedCode);
+    const output = fn(...Object.values(sandbox));
 
     return {
       success: true,

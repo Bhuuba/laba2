@@ -5,19 +5,28 @@ import { generateTask } from "../services/openaiService";
 import { updateUserStats, getCurrentUser } from "../services/firebaseService";
 import { DifficultySelector } from "../components/DifficultySelector";
 
+// Определяем стили для разных языков
+const languageStyles = {
+  javascript: "bg-yellow-500/10 border-yellow-500/30",
+  python: "bg-blue-500/10 border-blue-500/30",
+  "c++": "bg-purple-500/10 border-purple-500/30",
+};
+
 const TaskPage = () => {
   const [task, setTask] = useState(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [difficulty, setDifficulty] = useState("medium");
+  const [language, setLanguage] = useState("javascript");
 
   const handleGenerateTask = async () => {
     setLoading(true);
     try {
-      const result = await generateTask(difficulty, "javascript", []);
+      const result = await generateTask(difficulty, language, []);
       setTask({
         ...result,
-        difficulty: difficulty, // Убеждаемся, что сложность всегда установлена
+        difficulty: difficulty,
+        language: language,
       });
       setCode(result.template || "");
     } catch (error) {
@@ -38,7 +47,7 @@ const TaskPage = () => {
         task: task.task,
         title: task.title,
         solution: code,
-        language: "javascript",
+        language: language,
       };
 
       console.log("Sending task result:", fullTaskResult);
@@ -62,6 +71,29 @@ const TaskPage = () => {
             />
           </div>
 
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-3 text-white">
+              Виберіть мову програмування:
+            </h2>
+            <div className="flex space-x-4">
+              {Object.keys(languageStyles).map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setLanguage(lang)}
+                  className={`px-6 py-2.5 rounded-lg border transition-all duration-300 font-medium text-white
+                    ${languageStyles[lang]} 
+                    ${
+                      language === lang
+                        ? "scale-105 shadow-lg"
+                        : "opacity-70 hover:opacity-100"
+                    }`}
+                >
+                  {lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Task
             task={task}
             taskText={task?.task}
@@ -71,7 +103,7 @@ const TaskPage = () => {
 
           {task && (
             <CodeEditor
-              language="javascript"
+              language={language}
               value={code}
               onChange={setCode}
               task={task?.task}
